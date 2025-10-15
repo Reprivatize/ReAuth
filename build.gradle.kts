@@ -56,6 +56,7 @@ dependencies {
     api("ch.qos.logback:logback-classic:$logback_version")
     api("org.bouncycastle:bcpkix-jdk18on:1.82")
 
+    // TODO: Remove when pluggable 1.0.1 is public
     implementation("dev.mtctx.library:utilities:1.1.0")
     implementation("dev.mtctx.library:pluggable:1.0.0")
 

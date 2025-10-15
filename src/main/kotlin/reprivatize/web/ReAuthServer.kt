@@ -36,7 +36,7 @@ import mtctx.utilities.Outcome
 import mtctx.utilities.fileSystem
 import mtctx.utilities.jsonForMachines
 import okio.Path
-import okio.Path.Companion.toOkioPath
+import okio.Path.Companion.toPath
 import org.jetbrains.exposed.sql.Database
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -46,11 +46,10 @@ import reprivatize.web.plugin.ReAuthPlugin
 import reprivatize.web.route.session
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.toPath
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 
-val RUNNING_DIR: Path = ReAuthServer::class.java.protectionDomain.codeSource.location.toURI().toPath().toOkioPath()
+val RUNNING_DIR: Path = fileSystem.canonicalize("./".toPath())
 const val RAS_ASCII =
     """ ________  _______        ________  ___  ___  _________  ___  ___
 |\   __  \|\  ___ \   ___|\   __  \|\  \|\  \|\___   ___\\  \|\  \
