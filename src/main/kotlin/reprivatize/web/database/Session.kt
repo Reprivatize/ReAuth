@@ -19,8 +19,8 @@
 package reprivatize.web.database
 
 import kotlinx.serialization.Serializable
+import reprivatize.web.reAuthServer
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 
 @Serializable
 data class Session(
@@ -28,7 +28,7 @@ data class Session(
     val hash: ByteArray,
     val salt: ByteArray,
     val createdAt: Long,
-    val validFor: Duration = 30.minutes,
+    val validFor: Duration = reAuthServer().config.session.duration(),
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

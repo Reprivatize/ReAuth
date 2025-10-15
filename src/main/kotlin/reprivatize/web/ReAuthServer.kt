@@ -67,7 +67,8 @@ class ReAuthServer {
     val db: Database
     val sessionService: SessionService
 
-    var plugins: MutableList<Plugin> = mutableListOf()
+    val plugins: MutableList<Plugin> = mutableListOf()
+    val pluginRoutes = mutableListOf<Route.() -> Unit>()
     val pluginDir =
         RUNNING_DIR.resolve("plugins").toNioPath()
     val pluggable = Pluggable(
@@ -136,7 +137,7 @@ class ReAuthServer {
             loadOutcomes.values.filterIsInstance<Outcome.Success<Plugin>>().map { it.value }.forEach {
                 plugins.add(it)
                 it.plugin.enable()
-                reAuthLogger.info("Loaded and enabled plugin ${it.plugin.name} v${it.plugin.version}")
+                reAuthLogger.info("Loaded and enabled plugin ${it.config.name} v${it.config.version}")
             }
 
             loadOutcomes.forEach { (fileName, outcome) ->
@@ -163,9 +164,9 @@ class ReAuthServer {
             plugins.forEach {
                 it.plugin.disable()
                 when (val outcome = pluggable.unload(it)) {
-                    is Outcome.Success -> reAuthLogger.info("Unloaded plugin ${it.plugin.name} v${it.plugin.version}")
+                    is Outcome.Success -> reAuthLogger.info("Unloaded plugin ${it.config.name} v${it.config.version}")
                     is Outcome.Failure -> reAuthLogger.error(
-                        "Failed to unload plugin ${it.plugin.name} v${it.plugin.version}",
+                        "Failed to unload plugin ${it.config.name} v${it.config.version}",
                         outcome.message,
                         outcome.throwable
                     )
@@ -213,9 +214,9 @@ class ReAuthServer {
         routing {
             route("/$prefix") {
                 session()
-            }
 
-            plugins.map { it.plugin }.forEach { it.routes }
+                pluginRoutes.forEach { it() }
+            }
         }
     }
 }

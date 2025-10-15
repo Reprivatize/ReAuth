@@ -31,8 +31,8 @@ verification endpoint.
 ## Features
 
 * 🔒 **Secure Sessions:** Uses **Argon2** for hashing session IDs with a per-session salt, ensuring robust security.
-* 🔌 **Pluggable Architecture:** Allows loading external `.jar` plugins based on the `ReAuthPlugin` interface
-  and [Pluggable](https://github.com/mtctx/Pluggable) to extend routing and functionality.
+* 🔌 **Pluggable Architecture:** Allows loading external `.jar` plugins based on the `ReAuthPlugin` interface to extend
+  routing and functionality.
 * ⏱️ **Session Timeouts:** Configurable session durations with automatic validity checking.
 * 💨 **Ktor & CIO:** Built on the Ktor framework and the CIO engine for high-performance and asynchronous I/O.
 * 💾 **PostgreSQL Ready:** Uses the **Exposed** SQL framework for seamless integration with PostgreSQL.
@@ -68,7 +68,16 @@ The primary API endpoints are available under the `/reauth` prefix.
 
 -----
 
+## Documentation
+
+Full API usage and reference are available at:
+
+* 📖 **Plugin API Usage & Examples:** See [PLUGIN\_API\_DOC.md](PLUGIN_API_DOC.md)
+* 👉 **API Reference (Dokka):** [http://reauth.apidoc.reprivatize.me/](http://reauth.apidoc.reprivatize.me/)
+
+-----
+
 ## License
 
-ReAuth-Backend is free software under the [**GNU GPL v3**](LICENSE).
+ReAuth-Backend is free software under the **GNU GPL v3**.
 You can use it, modify it, and distribute it — as long as it remains free.

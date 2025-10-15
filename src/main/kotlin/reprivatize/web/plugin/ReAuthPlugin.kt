@@ -18,17 +18,22 @@
 
 package reprivatize.web.plugin
 
+import io.ktor.http.*
 import io.ktor.server.routing.*
+import reprivatize.web.reAuthServer
 
-abstract class ReAuthPlugin(
-    val name: String,
-    val version: String,
-    val author: String,
-    val description: String = "",
-    val website: String = "",
-    val sourceCode: String = "",
-) {
-    abstract val routes: Route.() -> Unit
+abstract class ReAuthPlugin {
+    fun routes(block: Route.() -> Unit) = apply { reAuthServer().pluginRoutes.add(block) }
+
+    fun registerMethod(method: HttpMethod) = apply { reAuthServer().allowedMethods += method }
+    fun registerMethods(vararg methods: HttpMethod) = apply { reAuthServer().allowedMethods.addAll(methods) }
+    fun registerMethods(methods: List<HttpMethod>) = apply { reAuthServer().allowedMethods.addAll(methods) }
+    fun registerHeader(header: String) = apply { reAuthServer().allowedHeaders += header }
+    fun registerHeaders(vararg headers: String) = apply { reAuthServer().allowedHeaders.addAll(headers) }
+    fun registerHeaders(headers: List<String>) = apply { reAuthServer().allowedHeaders.addAll(headers) }
+    fun registerHost(host: String) = apply { reAuthServer().allowedHosts += host }
+    fun registerHosts(vararg hosts: String) = apply { reAuthServer().allowedHosts.addAll(hosts) }
+    fun registerHosts(hosts: List<String>) = apply { reAuthServer().allowedHosts.addAll(hosts) }
 
     abstract fun enable()
     abstract fun disable()

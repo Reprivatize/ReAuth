@@ -62,7 +62,10 @@ data class RASConfig(
     @Serializable
     data class CORS(
         val allowedMethods: MutableSet<RASHttpMethods> = mutableSetOf(RASHttpMethods.Delete, RASHttpMethods.Post),
-        val allowedHeaders: MutableSet<RASHttpHeaders> = mutableSetOf(RASHttpHeaders.ContentType),
+        val allowedHeaders: MutableSet<RASHttpHeaders> = mutableSetOf(
+            RASHttpHeaders.ContentType,
+            RASHttpHeaders.Authorization
+        ),
         val allowedHosts: MutableSet<String> = mutableSetOf("localhost"),
     )
 
