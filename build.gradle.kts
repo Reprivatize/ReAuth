@@ -77,7 +77,7 @@ dokka {
         jdkVersion.set(21)
         sourceLink {
             localDirectory.set(file("src/main/kotlin"))
-            remoteUrl.set(uri("https://github.com/Reprivatize/ReAuth/blob/main/src/main/kotlin/reprivatize/web/"))
+            remoteUrl.set(uri("https://github.com/Reprivatize/ReAuth/tree/main/src/main/kotlin/reprivatize/web"))
             remoteLineSuffix.set("#L")
         }
     }
