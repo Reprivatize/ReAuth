@@ -1,5 +1,5 @@
 /*
- *     ReAuth-Backend: ReAuthPluginHost.kt
+ *     ReAuth-Backend: PasswordPlugin.kt
  *     Copyright (C) 2025 mtctx
  *
  *     This program is free software: you can redistribute it and/or modify
@@ -18,15 +18,24 @@
 
 package reprivatize.reauth
 
-import io.ktor.http.*
 import io.ktor.server.routing.*
 
-interface ReAuthServer {
-    fun addPluginRoute(route: Route.() -> Unit)
-    fun registerMethod(method: HttpMethod)
-    fun registerMethods(methods: List<HttpMethod>)
-    fun registerHeader(header: String)
-    fun registerHeaders(headers: List<String>)
-    fun registerHost(host: String)
-    fun registerHosts(hosts: List<String>)
+class PasswordPlugin : ReAuthPlugin() {
+    override fun enable() {
+        // Dont check for the session here
+        blacklistRoutesForMiddleware("login/password", "register/password")
+
+        routes {
+            get("/login/password") {
+
+            }
+            post("/register/password") {
+
+            }
+        }
+    }
+
+    override fun disable() {
+        TODO("Not yet implemented")
+    }
 }

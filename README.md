@@ -23,7 +23,7 @@ verification endpoint.
 | **`reprivatize.reauth.crypto`**       | Logic for secure operations, including the `generateSessionId` function using `SECURE_RANDOM`.                                                         |
 | **`reprivatize.reauth.database`**     | Handles persistent storage, defining the `Session` data class and the `SessionService` for all database interactions (create, read, delete, validate). |
 | **`reprivatize.reauth.plugin`**       | Core interfaces for the extensibility model: `ReAuthPlugin` abstract class and `PluginJSON` for metadata configuration.                                |
-| **`reprivatize.reauth.route`**        | Defines the Ktor REST endpoints, notably for `/reauth/session/create`, `/reauth/session/valid`, and `/reauth/session/invalidate`.                      |
+| **`reprivatize.reauth.session`**      | Defines the Ktor REST endpoints, notably for `/reauth/session/create`, `/reauth/session/valid`, and `/reauth/session/invalidate`.                      |
 | **`reprivatize.reauth.ReAuthServer`** | The main application entry point, handling configuration loading, database connection, plugin loading/management, and Ktor server setup.               |
 
 -----

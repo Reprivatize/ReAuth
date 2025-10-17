@@ -1,5 +1,5 @@
 /*
- *     ReAuth-Backend: Session.kt
+ *     ReAuth-Backend: SessionAttributes.kt
  *     Copyright (C) 2025 mtctx
  *
  *     This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,12 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package reprivatize.reauth.crypto
+package reprivatize.reauth.session
 
-import mtctx.utilities.crypto.SECURE_RANDOM
+import io.ktor.util.*
+import java.util.*
 
-fun generateSessionId(length: Int = 25): String {
-    val allowedCharacters = ('A'..'Z') + ('a'..'z') + ('0'..'9') + listOf(
-        "-", "_", ".", ",", ";", ":", "#", "*", "+", "~", "!", "§", "$",
-        "%", "&", "(", ")", "[", "]", "{", "}", "<", ">", "?", "="
-    )
-    return "REAUTH:${
-        (1..length).map { allowedCharacters[SECURE_RANDOM.nextInt(allowedCharacters.size)] }.joinToString("")
-    }"
+object SessionAttributes {
+    val UUID = AttributeKey<UUID>("uuid")
+    val MAC_TAG = AttributeKey<ByteArray>("mac_tag")
 }

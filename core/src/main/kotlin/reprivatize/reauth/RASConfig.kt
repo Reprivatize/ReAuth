@@ -19,7 +19,6 @@
 package reprivatize.reauth
 
 import kotlinx.serialization.Serializable
-import mtctx.utilities.crypto.Argon2.Companion.generateSalt
 import mtctx.utilities.jsonForHumans
 import mtctx.utilities.jsonForMachines
 import mtctx.utilities.readAndDeserialize
@@ -49,14 +48,13 @@ data class RASConfig(
 
     @Serializable
     data class Session(
-        val durationTime: Double,
-        val durationUnit: DurationUnit,
-        val sessionLength: Int = 25,
-        val argon2salt: String? = SESSION_DEFAULT_SALT_STRING,
+        val validForTime: Double,
+        val validForUnit: DurationUnit,
+        val clearSessionCacheTime: Double,
+        val clearSessionCacheUnit: DurationUnit,
     ) {
-        fun duration() = durationTime.toDuration(durationUnit)
-        fun salt() =
-            if (argon2salt == null || argon2salt == SESSION_DEFAULT_SALT_STRING) generateSalt() else argon2salt.encodeToByteArray()
+        fun validForDuration() = validForTime.toDuration(validForUnit)
+        fun clearSessionCacheDuration() = clearSessionCacheTime.toDuration(clearSessionCacheUnit)
     }
 
     @Serializable
@@ -81,7 +79,6 @@ data class RASConfig(
 
     companion object {
         val PATH = RUNNING_DIR.resolve("config.json")
-        const val SESSION_DEFAULT_SALT_STRING = "<change or keep as is for a random salt>"
         const val DEFAULT_INTERNAL_HOSTS_SECRET_KEY = "<change required, otherwise reauth can be compromised!>"
 
         val DEFAULT = RASConfig(
@@ -93,10 +90,10 @@ data class RASConfig(
                 password = "<password>",
             ),
             Session(
-                durationTime = 30.0,
-                durationUnit = DurationUnit.MINUTES,
-                sessionLength = 25,
-                argon2salt = SESSION_DEFAULT_SALT_STRING,
+                validForTime = 30.0,
+                validForUnit = DurationUnit.MINUTES,
+                clearSessionCacheTime = 1.0,
+                clearSessionCacheUnit = DurationUnit.HOURS,
             ),
             CORS(),
             TSL(),

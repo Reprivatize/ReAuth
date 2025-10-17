@@ -34,7 +34,8 @@ val localIps =
 )
 fun ApplicationCall.isInternalIPBased(): Boolean = localIps.contains(request.origin.remoteHost)
 fun ApplicationCall.isInternalSecretBased(): Boolean {
-    val header = request.header(HttpHeaders.Authorization) ?: return false
+    var header = request.header(HttpHeaders.Authorization) ?: return false
+    if (!header.startsWith("REAUTH:")) header = "REAUTH:$header"
     return header.encodeToByteArray() secureEquals "REAUTH:${reAuthServer.config.internalHostsSecretKey}".encodeToByteArray()
 }
 

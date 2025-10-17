@@ -16,18 +16,16 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-plugins {
-    kotlin("jvm")
-}
-
 group = "me.reprivatize.web"
-version = "unspecified"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation(project(":plugin:api"))
+
     testImplementation(kotlin("test"))
 }
 

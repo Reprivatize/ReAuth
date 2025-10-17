@@ -16,40 +16,48 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package reprivatize.reauth.database
+package reprivatize.reauth.session
 
 import kotlinx.serialization.Serializable
 import reprivatize.reauth.reAuthServer
+import reprivatize.reauth.serializer.UUIDSerializer
+import java.util.*
+import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlin.uuid.ExperimentalUuidApi
 
 @Serializable
-data class Session(
-    val internalId: Int,
-    val hash: ByteArray,
-    val salt: ByteArray,
+@OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
+class Session(
+    @Serializable(with = UUIDSerializer::class)
+    val uuid: UUID,
+    val macKey: ByteArray,
     val createdAt: Long,
-    val validFor: Duration = reAuthServer.config.session.duration(),
+    val validFor: Duration = reAuthServer.config.session.validForDuration(),
 ) {
+    fun expired(): Boolean =
+        Instant.fromEpochMilliseconds(createdAt) + validFor < Clock.System.now()
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
         other as Session
 
-        if (internalId != other.internalId) return false
         if (createdAt != other.createdAt) return false
-        if (!hash.contentEquals(other.hash)) return false
-        if (!salt.contentEquals(other.salt)) return false
+        if (uuid != other.uuid) return false
+        if (!macKey.contentEquals(other.macKey)) return false
         if (validFor != other.validFor) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = internalId
-        result = 31 * result + createdAt.hashCode()
-        result = 31 * result + hash.contentHashCode()
-        result = 31 * result + salt.contentHashCode()
+        var result = createdAt.hashCode()
+        result = 31 * result + uuid.hashCode()
+        result = 31 * result + macKey.contentHashCode()
         result = 31 * result + validFor.hashCode()
         return result
     }

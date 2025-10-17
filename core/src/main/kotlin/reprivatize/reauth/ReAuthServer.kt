@@ -16,6 +16,8 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:OptIn(ExperimentalTime::class)
+
 package reprivatize.reauth
 
 import io.github.flaxoos.ktor.server.plugins.ratelimiter.RateLimiting
@@ -31,6 +33,9 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.hsts.*
 import io.ktor.server.plugins.httpsredirect.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import mtctx.pluggable.Pluggable
 import mtctx.utilities.Outcome
 import mtctx.utilities.fileSystem
@@ -40,17 +45,23 @@ import okio.Path.Companion.toPath
 import org.jetbrains.exposed.sql.Database
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import reprivatize.reauth.database.SessionService
 import reprivatize.reauth.plugin.PluginConfig
-import reprivatize.reauth.route.session
+import reprivatize.reauth.session.Session
+import reprivatize.reauth.session.SessionCheckMiddleware
+import reprivatize.reauth.session.SessionService
+import reprivatize.reauth.session.session
 import java.sql.DriverManager
+import java.util.*
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.system.exitProcess
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
-val RUNNING_DIR: Path = fileSystem.canonicalize("./".toPath())
-val RAS_ASCII = """
+internal val RUNNING_DIR: Path = fileSystem.canonicalize("./".toPath())
+internal val RAS_ASCII = """
 ________  _______        ________  ___  ___  _________  ___  ___
 |\   __  \|\  ___ \   ___|\   __  \|\  \|\  \|\___   ___\\  \|\  \
 \ \  \|\  \ \   __/| |\__\ \  \|\  \ \  \\\  \|___ \  \_\ \  \\\  \
@@ -60,9 +71,24 @@ ________  _______        ________  ___  ___  _________  ___  ___
     \|__|\|__|\|_______|\|__|\|__|\|__|\|_______|    \|__|  \|__|\|__|
 """.trimEnd().trimStart()
 
-class ReAuthServer {
+private val internalWhenSessionCached = mutableMapOf<UUID, Instant>()
+private val internalCachedSessions = mutableMapOf<UUID, Session>()
+val cachedSessions: Map<UUID, Session> get() = internalCachedSessions
+val sessionMutex = Mutex()
+
+suspend fun cacheSession(session: Session) = sessionMutex.withLock {
+    internalWhenSessionCached[session.uuid] = Clock.System.now()
+    internalCachedSessions[session.uuid] = session
+}
+
+suspend fun uncacheSession(uuid: UUID) = sessionMutex.withLock {
+    internalWhenSessionCached.remove(uuid)
+    internalCachedSessions.remove(uuid)
+}
+
+class ReAuthServer : RASHost() {
     val config: RASConfig
-    val reAuthLogger: Logger = LoggerFactory.getLogger("ReAuth")
+    val logger: Logger = LoggerFactory.getLogger("ReAuth")
 
     val db: Database
     val sessionService: SessionService
@@ -76,50 +102,51 @@ class ReAuthServer {
         pluginDir,
         PluginConfig.serializer(),
         ReAuthPlugin::class.java,
-        ReAuthServer::class.java
+        RASHost::class.java
     )
 
     // Configurable by plugins
     val allowedMethods = mutableSetOf<HttpMethod>()
     val allowedHeaders = mutableSetOf<String>()
     val allowedHosts = mutableSetOf<String>()
+    val blacklistedRoutesForMiddleware = mutableSetOf("/reauth/session/validate")
 
     init {
-        RAS_ASCII.split("\n").forEach { reAuthLogger.info(it) }
-        reAuthLogger.info("Starting ReAuth Backend...")
-        reAuthLogger.info("Version: 1.0.0")
+        RAS_ASCII.split("\n").forEach { logger.info(it) }
+        logger.info("Starting ReAuth Backend...")
+        logger.info("Version: 1.0.0")
         reAuthServer = this
 
-        reAuthLogger.info("Loading configuration...")
+        logger.info("Loading configuration...")
         if (!fileSystem.exists(RASConfig.PATH)) {
             RASConfig.DEFAULT.save()
-            reAuthLogger.info("Created default configuration, please edit it!")
-            reAuthLogger.info(fileSystem.canonicalize(RASConfig.PATH).toString())
+            logger.info("Created default configuration, please edit it!")
+            logger.info(fileSystem.canonicalize(RASConfig.PATH).toString())
             exitProcess(0)
         }
 
         config = RASConfig.load()
         if (config == RASConfig.DEFAULT) {
-            reAuthLogger.info("Default configuration detected, please edit it!")
-            reAuthLogger.info(fileSystem.canonicalize(RASConfig.PATH).toString())
+            logger.info("Default configuration detected, please edit it!")
+            logger.info(fileSystem.canonicalize(RASConfig.PATH).toString())
             exitProcess(1)
         }
 
         if (config.internalHostsSecretKey == RASConfig.DEFAULT_INTERNAL_HOSTS_SECRET_KEY) {
-            reAuthLogger.info("Default internal hosts secret key detected, you NEED to change it, otherwise reauth can be compromised!")
-            reAuthLogger.info(fileSystem.canonicalize(RASConfig.PATH).toString())
+            logger.info("Default internal hosts secret key detected, you NEED to change it, otherwise reauth can be compromised!")
+            logger.info(fileSystem.canonicalize(RASConfig.PATH).toString())
             exitProcess(1)
         }
 
-        reAuthLogger.info("Loaded configuration!")
+        logger.info("Loaded configuration!")
 
-        reAuthLogger.info("Populating allowed http methods, http headers, and hosts...")
+        logger.info("Populating allowed http methods, http headers, and hosts...")
         allowedMethods += config.cors.allowedMethods.map { it.ktor }
         allowedHeaders += config.cors.allowedHeaders.map { it.ktor }
         allowedHosts += config.cors.allowedHosts
-        reAuthLogger.info("Populated allowed http methods, http headers, and hosts!")
+        logger.info("Populated allowed http methods, http headers, and hosts!")
 
-        reAuthLogger.info("Connecting to database...")
+        logger.info("Connecting to database...")
 
         try {
             Class.forName("org.postgresql.Driver")
@@ -129,7 +156,7 @@ class ReAuthServer {
                 config.database.password
             )
         } catch (e: Exception) {
-            reAuthLogger.error("Failed to connect to database! Check if your configuration is correct and if the database is online.")
+            logger.error("Failed to connect to database! Check if your configuration is correct and if the database is online.")
             exitProcess(1)
         }
 
@@ -141,46 +168,76 @@ class ReAuthServer {
         )
         sessionService = SessionService(db)
 
-        reAuthLogger.info("Connected to database!")
+        logger.info("Connected to database!")
 
         val pluginsToLoad = pluginDir.exists() && !pluginDir.listDirectoryEntries().isEmpty()
-        if (!pluginsToLoad) reAuthLogger.info("No plugins to load!")
+        if (!pluginsToLoad) logger.info("No plugins to load!")
         else {
-            reAuthLogger.info("Loading plugins...")
+            logger.info("Loading plugins...")
             val loadOutcomes = pluggable.loadAll()
             loadOutcomes.values.filterIsInstance<Outcome.Success<Plugin>>().map { it.value }.forEach {
                 plugins.add(it)
                 it.plugin.initialize(this)
                 it.plugin.enable()
-                reAuthLogger.info("Loaded and enabled plugin ${it.config.name} v${it.config.version}")
+                logger.info("Loaded and enabled plugin ${it.config.name} v${it.config.version}")
             }
 
             loadOutcomes.forEach { (fileName, outcome) ->
                 if (outcome.failed) {
                     outcome as Outcome.Failure
-                    reAuthLogger.error("Failed to load $fileName: ${outcome.message}", outcome.throwable)
+                    logger.error("Failed to load $fileName: ${outcome.message}", outcome.throwable)
                 }
             }
-            reAuthLogger.info("Loaded plugins!")
+            logger.info("Loaded plugins!")
         }
 
-        reAuthLogger.info("Starting web server...")
+        blacklistedRoutesForMiddleware.remove("/reauth/session/valid")
+        blacklistedRoutesForMiddleware.remove("/reauth/session/invalidate")
+
+        logger.info("Starting web server...")
         embeddedServer(CIO, port = config.port, host = "0.0.0.0") {
             configureSerialization()
             configureAdministration()
             configureHTTP()
+            install(SessionCheckMiddleware)
             configureRouting()
+
+            val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+            var cacheCleanupJob: Job? = null
+
+            monitor.subscribe(ApplicationStarted) {
+                cacheCleanupJob = coroutineScope.launch {
+                    while (isActive) {
+                        sessionMutex.withLock {
+                            internalWhenSessionCached.entries.toList()
+                                .forEach { (uuid, instant) ->
+                                    if (
+                                        instant + config.session.clearSessionCacheDuration() > Clock.System.now()
+                                        || internalCachedSessions[uuid] == null
+                                    ) return@forEach
+                                    internalWhenSessionCached.remove(uuid)
+                                    internalCachedSessions.remove(uuid)
+                                }
+                        }
+                        delay(config.session.clearSessionCacheDuration())
+                    }
+                }
+            }
+
+            monitor.subscribe(ApplicationStopped) {
+                cacheCleanupJob?.cancel()
+            }
         }.start(wait = true)
 
-        reAuthLogger.info("Stopping web server...")
+        logger.info("Stopping web server...")
 
         if (pluginsToLoad) {
-            reAuthLogger.info("Disabling and unloading ${plugins.size} plugins...")
+            logger.info("Disabling and unloading ${plugins.size} plugins...")
             plugins.forEach {
                 it.plugin.disable()
                 when (val outcome = pluggable.unload(it)) {
-                    is Outcome.Success -> reAuthLogger.info("Unloaded plugin ${it.config.name} v${it.config.version}")
-                    is Outcome.Failure -> reAuthLogger.error(
+                    is Outcome.Success -> logger.info("Unloaded plugin ${it.config.name} v${it.config.version}")
+                    is Outcome.Failure -> logger.error(
                         "Failed to unload plugin ${it.config.name} v${it.config.version}",
                         outcome.message,
                         outcome.throwable
@@ -189,7 +246,7 @@ class ReAuthServer {
             }
         }
 
-        reAuthLogger.info("Stopped web server!")
+        logger.info("Stopped web server!")
     }
 
     private fun Application.configureAdministration() {
@@ -225,13 +282,36 @@ class ReAuthServer {
     }
 
     private fun Application.configureRouting() {
-        val prefix = "/reauth"
         routing {
-            route("/$prefix") {
+            route("/reauth") {
                 session()
 
                 pluginRoutes.forEach { it() }
             }
         }
+    }
+
+    override fun addPluginRoute(route: Route.() -> Unit) {
+        this.pluginRoutes.add(route)
+    }
+
+    override fun blacklistRoutesForMiddleware(routes: List<String>) {
+        this.blacklistedRoutesForMiddleware += routes.map {
+            if (it.startsWith("/reauth/")) it
+            else if (it.startsWith("/")) "/reauth$it"
+            else "/reauth/$it"
+        }
+    }
+
+    override fun registerMethods(methods: List<HttpMethod>) {
+        this.allowedMethods += methods
+    }
+
+    override fun registerHeaders(headers: List<String>) {
+        this.allowedHeaders += headers
+    }
+
+    override fun registerHosts(hosts: List<String>) {
+        this.allowedHosts += hosts
     }
 }

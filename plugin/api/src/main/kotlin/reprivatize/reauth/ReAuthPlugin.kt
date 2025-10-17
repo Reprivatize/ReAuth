@@ -22,13 +22,17 @@ import io.ktor.http.*
 import io.ktor.server.routing.*
 
 abstract class ReAuthPlugin {
-    protected lateinit var server: ReAuthServer
+    protected lateinit var server: RASHost
 
-    fun initialize(server: ReAuthServer) {
+    fun initialize(server: RASHost) {
         this.server = server
     }
 
     fun routes(block: Route.() -> Unit) = apply { server.addPluginRoute(block) }
+    fun blacklistRouteForMiddleware(route: String) = apply { server.blacklistRouteForMiddleware(route) }
+    fun blacklistRoutesForMiddleware(routes: List<String>) = apply { server.blacklistRoutesForMiddleware(routes) }
+    fun blacklistRoutesForMiddleware(vararg routes: String) =
+        apply { server.blacklistRoutesForMiddleware(routes.toList()) }
 
     fun registerMethod(method: HttpMethod) = apply { server.registerMethod(method) }
     fun registerMethods(vararg methods: HttpMethod) = apply { server.registerMethods(methods.toList()) }

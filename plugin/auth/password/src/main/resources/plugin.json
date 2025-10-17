@@ -1,0 +1,8 @@
+{
+  "name": "RA-PasswordPlugin",
+  "version": "1.0.0",
+  "author": "Reprivatize",
+  "description": "Adds password (e-mail/username + password) authentication to ReAuth.",
+  "website": "https://github.com/Reprivatize/ReAuth-Backend/tree/main/plugin/auth/password",
+  "mainClass": "reprivatize.reauth.PasswordPluginKt"
+}

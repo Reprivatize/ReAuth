@@ -1,5 +1,5 @@
 /*
- *     ReAuth-Backend: SessionIdOnlyBody.kt
+ *     ReAuth-Backend: UUIDSerializer.kt
  *     Copyright (C) 2025 mtctx
  *
  *     This program is free software: you can redistribute it and/or modify
@@ -16,9 +16,23 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package reprivatize.reauth.bodies
+package reprivatize.reauth.serializer
 
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import java.util.*
 
-@Serializable
-data class SessionIdOnlyBody(val sessionId: String)
+class UUIDSerializer : KSerializer<UUID> {
+    override val descriptor: SerialDescriptor = SerialDescriptor("UUID", String.serializer().descriptor)
+
+    override fun serialize(encoder: Encoder, value: UUID) {
+        encoder.encodeString(value.toString())
+    }
+
+    override fun deserialize(decoder: Decoder): UUID {
+        return UUID.fromString(decoder.decodeString())
+    }
+}

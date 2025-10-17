@@ -33,12 +33,11 @@ repositories {
 }
 
 dependencies {
-    api("io.ktor:ktor-server-core")
-    api("io.ktor:ktor-server-content-negotiation")
-    api("io.ktor:ktor-serialization-kotlinx-json")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    api(libs.bundles.ktor.server)
+    api(libs.bundles.database)
+    api(libs.bundles.utilities)
 
-    api("dev.mtctx.library:pluggable:1.0.2")
+    api("dev.mtctx.library:utilities:1.1.0")
 }
 
 mavenPublishing {
