@@ -1,5 +1,5 @@
 /*
- * ReAuth-Backend (ReAuth-Backend.buildSrc): settings.gradle.kts
+ * ReAuth-Backend (ReAuth-Backend.plugin.api.main): RASSession.kt
  * Copyright (C) 2025 mtctx
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,19 +15,16 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-dependencyResolutionManagement {
+package reprivatize.reauth.data
 
-    // Use Maven Central and the Gradle Plugin Portal for resolving dependencies in the shared build logic (`buildSrc`) project.
-    @Suppress("UnstableApiUsage")
-    repositories {
-        mavenCentral()
-    }
+import java.util.*
+import kotlin.time.Duration
 
-    versionCatalogs {
-        create("libs") {
-            from(files("../gradle/libs.versions.toml"))
-        }
-    }
+interface RASSession {
+    val uuid: UUID
+    val macKey: ByteArray
+    val createdAt: Long
+    val validFor: Duration
+
+    fun expired(): Boolean
 }
-
-rootProject.name = "buildSrc"

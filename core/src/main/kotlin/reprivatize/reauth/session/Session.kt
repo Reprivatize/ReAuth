@@ -1,24 +1,24 @@
 /*
- *     ReAuth-Backend: Session.kt
- *     Copyright (C) 2025 mtctx
+ * ReAuth-Backend (ReAuth-Backend.core.main): Session.kt
+ * Copyright (C) 2025 mtctx
  *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the **GNU General Public License** as published
+ * by the Free Software Foundation, either **version 3** of the License, or
+ * (at your option) any later version.
  *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
+ * *This program is distributed WITHOUT ANY WARRANTY;** see the
+ * GNU General Public License for more details, which you should have
+ * received with this program.
  *
- *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * SPDX-FileCopyrightText: 2025 mtctx
+ * SPDX-License-Identifier: GPL-3.0-only
  */
 
 package reprivatize.reauth.session
 
 import kotlinx.serialization.Serializable
+import reprivatize.reauth.data.RASSession
 import reprivatize.reauth.reAuthServer
 import reprivatize.reauth.serializer.UUIDSerializer
 import java.util.*
@@ -32,12 +32,12 @@ import kotlin.uuid.ExperimentalUuidApi
 @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
 class Session(
     @Serializable(with = UUIDSerializer::class)
-    val uuid: UUID,
-    val macKey: ByteArray,
-    val createdAt: Long,
-    val validFor: Duration = reAuthServer.config.session.validForDuration(),
-) {
-    fun expired(): Boolean =
+    override val uuid: UUID,
+    override val macKey: ByteArray,
+    override val createdAt: Long,
+    override val validFor: Duration = reAuthServer.config.session.validForDuration(),
+) : RASSession {
+    override fun expired(): Boolean =
         Instant.fromEpochMilliseconds(createdAt) + validFor < Clock.System.now()
 
     override fun equals(other: Any?): Boolean {

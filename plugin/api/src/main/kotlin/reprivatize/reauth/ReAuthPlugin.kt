@@ -1,31 +1,37 @@
 /*
- *     ReAuth-Backend: ReAuthPlugin.kt
- *     Copyright (C) 2025 mtctx
+ * ReAuth-Backend (ReAuth-Backend.plugin.api.main): ReAuthPlugin.kt
+ * Copyright (C) 2025 mtctx
  *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the **GNU General Public License** as published
+ * by the Free Software Foundation, either **version 3** of the License, or
+ * (at your option) any later version.
  *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
+ * *This program is distributed WITHOUT ANY WARRANTY;** see the
+ * GNU General Public License for more details, which you should have
+ * received with this program.
  *
- *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * SPDX-FileCopyrightText: 2025 mtctx
+ * SPDX-License-Identifier: GPL-3.0-only
  */
 
 package reprivatize.reauth
 
 import io.ktor.http.*
 import io.ktor.server.routing.*
+import org.slf4j.Logger
+import reprivatize.reauth.service.RASSessionService
 
 abstract class ReAuthPlugin {
     protected lateinit var server: RASHost
+    protected lateinit var logger: Logger
 
-    fun initialize(server: RASHost) {
+    protected lateinit var sessionService: RASSessionService
+
+    fun initialize(server: RASHost, logger: Logger, sessionService: RASSessionService) {
         this.server = server
+        this.logger = logger
+        this.sessionService = sessionService
     }
 
     fun routes(block: Route.() -> Unit) = apply { server.addPluginRoute(block) }

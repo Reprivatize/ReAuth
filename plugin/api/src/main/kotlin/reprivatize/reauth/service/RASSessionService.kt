@@ -1,5 +1,5 @@
 /*
- * ReAuth-Backend (ReAuth-Backend.core.main): SessionAttributes.kt
+ * ReAuth-Backend (ReAuth-Backend.plugin.api.main): RASSessionService.kt
  * Copyright (C) 2025 mtctx
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,12 +15,22 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-package reprivatize.reauth.session
+package reprivatize.reauth.service
 
-import io.ktor.util.*
+import reprivatize.reauth.data.RASSession
 import java.util.*
 
-object SessionAttributes {
-    val UUID = AttributeKey<UUID>("uuid")
-    val MAC_TAG = AttributeKey<ByteArray>("mac_tag")
+interface RASSessionService {
+
+    suspend fun create(): String
+
+    suspend fun read(uuid: UUID): RASSession?
+
+    suspend fun delete(uuid: UUID)
+
+    suspend fun isValid(uuid: UUID, clientMacTagBase64: String): Boolean
+    suspend fun isValid(uuid: UUID, clientMacTag: ByteArray): Boolean
+    suspend fun isExpired(uuid: UUID): Boolean
+
+    suspend fun session(uuid: UUID): RASSession?
 }

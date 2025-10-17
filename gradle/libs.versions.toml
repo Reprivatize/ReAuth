@@ -7,7 +7,7 @@ ktor = "3.3.0"
 exposed = "0.61.0"
 postgresql = "42.7.8"
 ratelimiting = "2.2.1"
-logback = "1.5.19"
+lumina = "4.1.1"
 bouncycastle = "1.82"
 kotlinx-serialization = "1.9.0"
 pluggable = "1.0.2"
@@ -34,7 +34,7 @@ exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version
 postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
 
 rate-limiting = { group = "io.github.flaxoos", name = "ktor-server-rate-limiting", version.ref = "ratelimiting" }
-logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+lumina = { group = "dev.mtctx.library", name = "lumina", version.ref = "lumina" }
 bouncycastle = { group = "org.bouncycastle", name = "bcpkix-jdk18on", version.ref = "bouncycastle" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 pluggable = { group = "dev.mtctx.library", name = "pluggable", version.ref = "pluggable" }
@@ -44,4 +44,4 @@ kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", vers
 ktor-server = ["ktor-server-compression", "ktor-server-cors", "ktor-server-hsts", "ktor-server-http-redirect", "ktor-server-core", "ktor-server-content-negotiation", "ktor-serialization-json", "ktor-server-cio"]
 exposed = ["exposed-core", "exposed-jdbc"]
 database = ["exposed-core", "exposed-jdbc", "postgresql"]
-utilities = ["rate-limiting", "logback", "bouncycastle", "kotlinx-serialization-json", "kotlin-test"]
+utilities = ["rate-limiting", "lumina", "bouncycastle", "kotlinx-serialization-json", "kotlin-test"]

@@ -1,19 +1,18 @@
 /*
- *     ReAuth-Backend: ReAuthServer.kt
- *     Copyright (C) 2025 mtctx
+ * ReAuth-Backend (ReAuth-Backend.core.main): ReAuthServer.kt
+ * Copyright (C) 2025 mtctx
  *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the **GNU General Public License** as published
+ * by the Free Software Foundation, either **version 3** of the License, or
+ * (at your option) any later version.
  *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
+ * *This program is distributed WITHOUT ANY WARRANTY;** see the
+ * GNU General Public License for more details, which you should have
+ * received with this program.
  *
- *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * SPDX-FileCopyrightText: 2025 mtctx
+ * SPDX-License-Identifier: GPL-3.0-only
  */
 
 @file:OptIn(ExperimentalTime::class)
@@ -46,6 +45,7 @@ import org.jetbrains.exposed.sql.Database
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import reprivatize.reauth.plugin.PluginConfig
+import reprivatize.reauth.service.RASSessionService
 import reprivatize.reauth.session.Session
 import reprivatize.reauth.session.SessionCheckMiddleware
 import reprivatize.reauth.session.SessionService
@@ -91,7 +91,7 @@ class ReAuthServer : RASHost() {
     val logger: Logger = LoggerFactory.getLogger("ReAuth")
 
     val db: Database
-    val sessionService: SessionService
+    val sessionService: RASSessionService
 
     val plugins: MutableList<Plugin> = mutableListOf()
     val pluginRoutes = mutableListOf<Route.() -> Unit>()
@@ -177,7 +177,7 @@ class ReAuthServer : RASHost() {
             val loadOutcomes = pluggable.loadAll()
             loadOutcomes.values.filterIsInstance<Outcome.Success<Plugin>>().map { it.value }.forEach {
                 plugins.add(it)
-                it.plugin.initialize(this)
+                it.plugin.initialize(this, LoggerFactory.getLogger(it.config.name), sessionService)
                 it.plugin.enable()
                 logger.info("Loaded and enabled plugin ${it.config.name} v${it.config.version}")
             }
