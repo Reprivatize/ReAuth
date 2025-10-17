@@ -1,5 +1,5 @@
 /*
- *     ReAuth-Backend: build.gradle.kts
+ *     ReAuth-Backend: settings.gradle.kts
  *     Copyright (C) 2025 mtctx
  *
  *     This program is free software: you can redistribute it and/or modify
@@ -16,36 +16,19 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-plugins {
-    `dokka-convention`
-}
+dependencyResolutionManagement {
 
-
-allprojects {
-    plugins.apply("dokka-convention")
-
+    // Use Maven Central and the Gradle Plugin Portal for resolving dependencies in the shared build logic (`buildSrc`) project.
+    @Suppress("UnstableApiUsage")
     repositories {
         mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/dokka/maven")
+    }
+
+    versionCatalogs {
+        create("libs") {
+            from(files("../gradle/libs.versions.toml"))
+        }
     }
 }
 
-subprojects {
-    plugins.apply("org.jetbrains.kotlin.jvm")
-    plugins.apply("org.jetbrains.kotlin.plugin.serialization")
-}
-
-dependencies {
-    dokka(project(":core"))
-    dokka(project(":plugin:api"))
-    dokka(project(":plugin:auth:password"))
-}
-
-dokka {
-    dokkaPublications.html {
-        outputDirectory.set(layout.projectDirectory.dir("docs/html").asFile)
-    }
-    dokkaPublications.javadoc {
-        outputDirectory.set(layout.projectDirectory.dir("docs/javadoc").asFile)
-    }
-}
+rootProject.name = "buildSrc"

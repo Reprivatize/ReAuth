@@ -1,5 +1,5 @@
 /*
- *     ReAuth-Backend: build.gradle.kts
+ *     ReAuth-Backend: dokka-convention.gradle.kts
  *     Copyright (C) 2025 mtctx
  *
  *     This program is free software: you can redistribute it and/or modify
@@ -17,35 +17,24 @@
  */
 
 plugins {
-    `dokka-convention`
-}
-
-
-allprojects {
-    plugins.apply("dokka-convention")
-
-    repositories {
-        mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/dokka/maven")
-    }
-}
-
-subprojects {
-    plugins.apply("org.jetbrains.kotlin.jvm")
-    plugins.apply("org.jetbrains.kotlin.plugin.serialization")
-}
-
-dependencies {
-    dokka(project(":core"))
-    dokka(project(":plugin:api"))
-    dokka(project(":plugin:auth:password"))
+    id("org.jetbrains.dokka")
+    id("org.jetbrains.dokka-javadoc")
 }
 
 dokka {
     dokkaPublications.html {
-        outputDirectory.set(layout.projectDirectory.dir("docs/html").asFile)
+        outputDirectory.set(layout.buildDirectory.dir("dokka/html").get().asFile)
     }
     dokkaPublications.javadoc {
-        outputDirectory.set(layout.projectDirectory.dir("docs/javadoc").asFile)
+        outputDirectory.set(layout.buildDirectory.dir("dokka/javadoc").get().asFile)
+    }
+
+    dokkaSourceSets.configureEach {
+        jdkVersion.set(21)
+        sourceLink {
+            localDirectory.set(file("${project.name}/src/main/kotlin"))
+            remoteUrl.set(uri("https://github.com/Reprivatize/ReAuth-Backend/tree/main/${project.name}/src/main/kotlin/reprivatize/reauth/"))
+            remoteLineSuffix.set("#L")
+        }
     }
 }

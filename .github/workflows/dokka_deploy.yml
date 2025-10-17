@@ -13,11 +13,6 @@ permissions:
 
 jobs:
   build:
-    #    if: |
-    #      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-    #      (github.event_name == 'pull_request' &&
-    #       github.event.pull_request.merged == true &&
-    #       github.event.pull_request.base.ref == 'main')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -35,19 +30,14 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Generate Dokka documentation
-        run: ./gradlew dokkaGeneratePublicationHtml
+        run: ./gradlew dokkaGenerateHtml
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build/dokka/html
+          path: docs/html
 
   deploy:
-    #    if: |
-    #      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-    #      (github.event_name == 'pull_request' &&
-    #       github.event.pull_request.merged == true &&
-    #       github.event.pull_request.base.ref == 'main')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

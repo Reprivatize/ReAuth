@@ -17,35 +17,33 @@
  */
 
 plugins {
-    `dokka-convention`
+    alias(libs.plugins.ktor)
 }
 
+group = "me.reprivatize.reauth"
+version = "1.0.0"
 
-allprojects {
-    plugins.apply("dokka-convention")
-
-    repositories {
-        mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/dokka/maven")
-    }
+application {
+    mainClass = "reprivatize.reauth.ApplicationKt"
 }
 
-subprojects {
-    plugins.apply("org.jetbrains.kotlin.jvm")
-    plugins.apply("org.jetbrains.kotlin.plugin.serialization")
+repositories {
+    mavenCentral()
 }
 
 dependencies {
-    dokka(project(":core"))
-    dokka(project(":plugin:api"))
-    dokka(project(":plugin:auth:password"))
+    implementation(libs.bundles.ktor.server)
+    implementation(libs.bundles.database)
+    implementation(libs.bundles.utilities)
+
+    api(libs.pluggable)
+
+    implementation(project(":plugin:api"))
+
+    testApi(libs.ktor.server.test.host)
+    testApi(libs.kotlin.test)
 }
 
-dokka {
-    dokkaPublications.html {
-        outputDirectory.set(layout.projectDirectory.dir("docs/html").asFile)
-    }
-    dokkaPublications.javadoc {
-        outputDirectory.set(layout.projectDirectory.dir("docs/javadoc").asFile)
-    }
+kotlin {
+    jvmToolchain(21)
 }

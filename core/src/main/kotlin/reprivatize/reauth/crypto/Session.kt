@@ -1,5 +1,5 @@
 /*
- *     ReAuth-Backend: settings.gradle.kts
+ *     ReAuth-Backend: Session.kt
  *     Copyright (C) 2025 mtctx
  *
  *     This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,16 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/dokka/maven")
-    }
+package reprivatize.reauth.crypto
+
+import mtctx.utilities.crypto.SECURE_RANDOM
+
+fun generateSessionId(length: Int = 25): String {
+    val allowedCharacters = ('A'..'Z') + ('a'..'z') + ('0'..'9') + listOf(
+        "-", "_", ".", ",", ";", ":", "#", "*", "+", "~", "!", "§", "$",
+        "%", "&", "(", ")", "[", "]", "{", "}", "<", ">", "?", "="
+    )
+    return "REAUTH:${
+        (1..length).map { allowedCharacters[SECURE_RANDOM.nextInt(allowedCharacters.size)] }.joinToString("")
+    }"
 }
-
-rootProject.name = "ReAuth-Backend"
-
-include("core")
-include("plugin:api")
-include("plugin:auth:password")

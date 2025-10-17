@@ -17,35 +17,19 @@
  */
 
 plugins {
-    `dokka-convention`
+    // The Kotlin DSL plugin provides a convenient way to develop convention plugins.
+    // Convention plugins are located in `src/main/kotlin`, with the file extension `.gradle.kts`,
+    // and are applied in the project's `build.gradle.kts` files as required.
+    `kotlin-dsl`
 }
 
-
-allprojects {
-    plugins.apply("dokka-convention")
-
-    repositories {
-        mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/dokka/maven")
-    }
-}
-
-subprojects {
-    plugins.apply("org.jetbrains.kotlin.jvm")
-    plugins.apply("org.jetbrains.kotlin.plugin.serialization")
+kotlin {
+    jvmToolchain(21)
 }
 
 dependencies {
-    dokka(project(":core"))
-    dokka(project(":plugin:api"))
-    dokka(project(":plugin:auth:password"))
-}
-
-dokka {
-    dokkaPublications.html {
-        outputDirectory.set(layout.projectDirectory.dir("docs/html").asFile)
-    }
-    dokkaPublications.javadoc {
-        outputDirectory.set(layout.projectDirectory.dir("docs/javadoc").asFile)
-    }
+    // Add a dependency on the Kotlin Gradle plugin, so that convention plugins can apply it.
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20")
+    implementation("org.jetbrains.kotlin:kotlin-serialization:2.2.20")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:2.1.0-Beta")
 }

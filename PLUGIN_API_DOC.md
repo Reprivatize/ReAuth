@@ -17,11 +17,11 @@ Each plugin JAR must include a `plugin.json` file at its root with the following
 
 ## Core Components
 
-| Component            | Module                   | Description                                                                                                                                        |
-|:---------------------|:-------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|
-| **`ReAuthPlugin`**   | `reprivatize.web.plugin` | The abstract base class that all plugins must extend. It provides methods for adding routes and configuring CORS settings.                         |
-| **`PluginJSON`**     | `reprivatize.web.plugin` | A serializable data class for plugin metadata (name, version, author, main class) loaded from the plugin's configuration file.                     |
-| **`reAuthServer()`** | `reprivatize.web`        | A global access function to the main `ReAuthServer` instance, providing access to `config`, `sessionService`, and mutable CORS configuration sets. |
+| Component            | Module                      | Description                                                                                                                                        |
+|:---------------------|:----------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|
+| **`ReAuthPlugin`**   | `reprivatize.reauth.plugin` | The abstract base class that all plugins must extend. It provides methods for adding routes and configuring CORS settings.                         |
+| **`PluginJSON`**     | `reprivatize.reauth.plugin` | A serializable data class for plugin metadata (name, version, author, main class) loaded from the plugin's configuration file.                     |
+| **`reAuthServer()`** | `reprivatize.reauth`        | A global access function to the main `ReAuthServer` instance, providing access to `config`, `sessionService`, and mutable CORS configuration sets. |
 
 -----
 

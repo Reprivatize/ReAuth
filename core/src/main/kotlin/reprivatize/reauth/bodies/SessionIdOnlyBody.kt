@@ -1,5 +1,5 @@
 /*
- *     ReAuth-Backend: settings.gradle.kts
+ *     ReAuth-Backend: SessionIdOnlyBody.kt
  *     Copyright (C) 2025 mtctx
  *
  *     This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,9 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/dokka/maven")
-    }
-}
+package reprivatize.reauth.bodies
 
-rootProject.name = "ReAuth-Backend"
+import kotlinx.serialization.Serializable
 
-include("core")
-include("plugin:api")
-include("plugin:auth:password")
+@Serializable
+data class SessionIdOnlyBody(val sessionId: String)

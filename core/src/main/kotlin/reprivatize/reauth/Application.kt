@@ -1,5 +1,5 @@
 /*
- *     ReAuth-Backend: settings.gradle.kts
+ *     ReAuth-Backend: Application.kt
  *     Copyright (C) 2025 mtctx
  *
  *     This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,14 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/dokka/maven")
-    }
+package reprivatize.reauth
+
+import mtctx.pluggable.LoadedPlugin
+import reprivatize.reauth.plugin.PluginConfig
+
+typealias Plugin = LoadedPlugin<ReAuthPlugin, PluginConfig>
+
+lateinit var reAuthServer: ReAuthServer
+fun main() {
+    ReAuthServer()
 }
-
-rootProject.name = "ReAuth-Backend"
-
-include("core")
-include("plugin:api")
-include("plugin:auth:password")

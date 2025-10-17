@@ -1,5 +1,5 @@
 /*
- *     ReAuth-Backend: settings.gradle.kts
+ *     ReAuth-Backend: ReAuthPluginHost.kt
  *     Copyright (C) 2025 mtctx
  *
  *     This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,17 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/dokka/maven")
-    }
+package reprivatize.reauth
+
+import io.ktor.http.*
+import io.ktor.server.routing.*
+
+interface ReAuthServer {
+    fun addPluginRoute(route: Route.() -> Unit)
+    fun registerMethod(method: HttpMethod)
+    fun registerMethods(methods: List<HttpMethod>)
+    fun registerHeader(header: String)
+    fun registerHeaders(headers: List<String>)
+    fun registerHost(host: String)
+    fun registerHosts(hosts: List<String>)
 }
-
-rootProject.name = "ReAuth-Backend"
-
-include("core")
-include("plugin:api")
-include("plugin:auth:password")
